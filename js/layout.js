@@ -51,15 +51,17 @@
        红票保持原样铺满画布；蓝票 / CR450 的原图较大（1735×1067），
        整张映射到票面区域，这样同一套版面坐标对三张图都成立。
        centerData：把「数据层」（所有字段）水平居中到票面（红票不设，保持原样）。
-       fieldOverrides：某张底图对个别字段的覆盖（如蓝票的二维码要缩小）。 */
+       fieldOverrides：某张底图对个别字段的覆盖（如蓝票的二维码要缩小）。
+       fileSuffix：导出 PNG 时加在「车次」后面的后缀，避免三张模板互相覆盖：
+                   红票 车次.png、蓝票 车次-blue.png、CR450 车次-CR450.png */
     backgrounds: [
       {
-        id: 'red', label: '红票', file: 'assets/ticket-blank.webp',
+        id: 'red', label: '红票', file: 'assets/ticket-blank.webp', fileSuffix: '',
         src: { x: 0, y: 0, w: 1062, h: 720 },
         dst: { x: 0, y: 0, w: 1062, h: 720 }
       },
       {
-        id: 'blue', label: '蓝票', file: 'assets/Blue ticket.png',
+        id: 'blue', label: '蓝票', file: 'assets/Blue ticket.png', fileSuffix: '-blue',
         src: { x: 0, y: 0, w: 1735, h: 1067 },
         dst: { x: 53, y: 49, w: 966, h: 623 },
         centerData: true,
@@ -69,7 +71,7 @@
         }
       },
       {
-        id: 'cr450', label: 'CR450版', file: 'assets/CR450.png',
+        id: 'cr450', label: 'CR450版', file: 'assets/CR450.png', fileSuffix: '-CR450',
         src: { x: 0, y: 0, w: 1735, h: 1067 },
         dst: { x: 53, y: 49, w: 966, h: 623 },
         centerData: true,

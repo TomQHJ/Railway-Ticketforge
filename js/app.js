@@ -838,17 +838,28 @@
     }).catch(function () { return null; });
   }
 
-  /* 取得可写目录：优先已有的句柄，其次让用户选一次（默认打开「下载」文件夹） */
+  /* 取得可写目录：授权根目录下再建/复用一级 Ticket 子目录，
+     最终文件都落在「下载/Ticket/」里，不再和下载文件夹里的其它文件混在一起。 */
+  var SUBDIR = 'Ticket';
+  var outDirHandle = null;      // <根目录>/Ticket
+
   function ensureDir() {
     var opts = { id: 'ticket-export', mode: 'readwrite', startIn: 'downloads' };
     if (typeof window.showDirectoryPicker !== 'function') return Promise.resolve(null);
 
+    function sub(root) {
+      return root.getDirectoryHandle(SUBDIR, { create: true }).then(function (d) {
+        dirHandle = root;
+        outDirHandle = d;
+        return d;
+      });
+    }
+
     function ask() {
       /* 必须在用户手势里同步发起 */
       return window.showDirectoryPicker(opts).then(function (h) {
-        dirHandle = h;
         idbSet('dir', h);
-        return h;
+        return sub(h);
       });
     }
 
@@ -864,44 +875,99 @@
 
     if (!dirHandle) return ask();
     return verify(dirHandle).then(function (h) {
-      if (h) return h;
-      dirHandle = null;
-      return ask();
+      if (!h) { dirHandle = null; outDirHandle = null; return ask(); }
+      if (outDirHandle) return outDirHandle;
+      return sub(h);
     });
+  }
+
+  function writeInto(dir, blob, filename) {
+    return dir.getFileHandle(filename, { create: true }).then(function (fh) {
+      return fh.createWritable().then(function (w) {
+        return w.write(blob).then(function () { return w.close(); });
+      });
+    });
+  }
+
+  /* 兜底一：系统「另存为」对话框 */
+  function pickerSave(blob, filename, kind, onDone) {
+    if (typeof window.showSaveFilePicker !== 'function') return false;
+    var types = kind === 'json'
+      ? [{ description: 'JSON 文件', accept: { 'application/json': ['.json'] } }]
+      : [{ description: 'PNG 图片', accept: { 'image/png': ['.png'] } }];
+    try {
+      window.showSaveFilePicker({ suggestedName: filename, types: types })
+        .then(function (h) {
+          return h.createWritable().then(function (w) {
+            return w.write(blob).then(function () { return w.close(); });
+          }).then(function () { if (onDone) onDone('picker', h.name); });
+        })
+        .catch(function (err) {
+          if (err && err.name === 'AbortError') { if (onDone) onDone('cancel'); return; }
+          if (onDone) onDone('fail');
+        });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* 兜底二：走浏览器自己的下载（手机端 / Firefox / Safari 都靠它）。
+     部署到 https 后 blob 下载是正常可用的；file:// 下 Chrome 会静默丢弃，
+     所以桌面上优先用上面的目录写入。 */
+  function browserDownload(blob, filename, onDone) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);   // 部分浏览器要求节点在文档里才触发
+    a.click();
+    setTimeout(function () {
+      if (a.parentNode) a.parentNode.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 10000);
+    if (onDone) onDone('download');
   }
 
   function saveBlob(blob, filename, kind) {
     showExportResult(blob, filename, kind);
+
+    function viaFallback(reason) {
+      /* 目录写入不可用 / 失败 → 自动退回「另存为」→ 再退回浏览器下载 */
+      pickerSave(blob, filename, kind, function (how, name) {
+        if (how === 'cancel') { toast('已取消保存'); return; }
+        if (how === 'picker') {
+          toast('已保存：' + name);
+          if (lastExport) lastExport.saved = true;
+          refreshExportResult();
+          return;
+        }
+        browserDownload(blob, filename, function () {
+          toast('已调用浏览器下载：' + filename);
+          if (lastExport) { lastExport.saved = true; lastExport.via = 'download'; }
+          refreshExportResult();
+        });
+      }) || browserDownload(blob, filename, function () {
+        toast((reason ? reason + '，' : '') + '已调用浏览器下载：' + filename);
+        if (lastExport) { lastExport.saved = true; lastExport.via = 'download'; }
+        refreshExportResult();
+      });
+    }
+
     ensureDir().then(function (dir) {
       if (!dir) throw new Error('nodir');
-      return dir.getFileHandle(filename, { create: true }).then(function (fh) {
-        return fh.createWritable().then(function (w) {
-          return w.write(blob).then(function () { return w.close(); });
-        });
-      }).then(function () {
-        toast('已保存到「' + dir.name + '」：' + filename);
-        if (lastExport) lastExport.saved = true;
+      return writeInto(dir, blob, filename).then(function () {
+        toast('已保存到「' + (dirHandle ? dirHandle.name : '') + '/' + SUBDIR + '」：' + filename);
+        if (lastExport) { lastExport.saved = true; lastExport.via = 'dir'; }
         refreshExportResult();
       });
     }).catch(function (err) {
       if (err && err.name === 'AbortError') { toast('已取消保存'); return; }
       if (err && err.message === 'nodir') {
-        toast('当前浏览器不支持直接写入文件夹，已改用「另存为」');
+        viaFallback('当前浏览器不支持直接写入文件夹');
       } else {
-        toast('保存失败：' + (err && err.message ? err.message : err));
-      }
-      /* 兜底：浏览器「另存为」 */
-      if (typeof window.showSaveFilePicker === 'function') {
-        var types = kind === 'json'
-          ? [{ description: 'JSON 文件', accept: { 'application/json': ['.json'] } }]
-          : [{ description: 'PNG 图片', accept: { 'image/png': ['.png'] } }];
-        window.showSaveFilePicker({ suggestedName: filename, types: types })
-          .then(function (h) {
-            return h.createWritable().then(function (w) {
-              return w.write(blob).then(function () { return w.close(); });
-            }).then(function () { toast('已保存：' + h.name); });
-          })
-          .catch(function () { /* 用户取消 */ });
+        viaFallback('直接写入失败');
       }
     });
   }
@@ -919,8 +985,10 @@
     box.hidden = false;
     box.innerHTML = '';
     var line = document.createElement('div');
-    line.innerHTML = '上次导出：<b>' + e.filename + '</b>（' + humanSize(e.blob.size) + '）' +
-      (e.saved && dirHandle ? '<br>已直接写入「' + dirHandle.name + '」文件夹' : '');
+    var where = '';
+    if (e.saved && e.via === 'dir') where = '<br>已直接写入「' + (dirHandle ? dirHandle.name : '') + '/' + SUBDIR + '」文件夹';
+    else if (e.saved && e.via === 'download') where = '<br>已调用浏览器下载';
+    line.innerHTML = '上次导出：<b>' + e.filename + '</b>（' + humanSize(e.blob.size) + '）' + where;
     var acts = document.createElement('div');
     acts.className = 'acts';
 
@@ -986,8 +1054,12 @@
       layout: L, values: state.values, bgImage: state.bgImage, bgId: state.bgId,
       qrImage: state.qrImage, scale: k
     });
-    /* 文件名 = 用户输入的车次，例如 XXXX.png */
-    var filename = (safeName(state.values.trainNo) || 'ticket') + '.png';
+    /* 文件名 = 用户输入的车次 + 模板后缀：
+       红票 车次.png、蓝票 车次-blue.png、CR450 车次-CR450.png
+       —— 三张模板可以依次导出，不会互相覆盖 */
+    var bgNow = R.findBackground(L, state.bgId);
+    var suffix = (bgNow && bgNow.fileSuffix) || '';
+    var filename = (safeName(state.values.trainNo) || 'ticket') + suffix + '.png';
     try {
       // 同步取 dataURL -> Blob，保证仍在点击手势内调用「另存为」
       saveBlob(dataUrlToBlob(cv.toDataURL('image/png')), filename, 'png');

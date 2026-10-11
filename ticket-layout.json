@@ -39,6 +39,88 @@
       "title": "装饰 / 二维码"
     }
   ],
+  "backgrounds": [
+    {
+      "id": "red",
+      "label": "红票",
+      "file": "assets/ticket-blank.webp",
+      "fileSuffix": "",
+      "src": {
+        "x": 0,
+        "y": 0,
+        "w": 1062,
+        "h": 720
+      },
+      "dst": {
+        "x": 0,
+        "y": 0,
+        "w": 1062,
+        "h": 720
+      },
+      "centerData": false,
+      "fieldOverrides": null
+    },
+    {
+      "id": "blue",
+      "label": "蓝票",
+      "file": "assets/Blue ticket.png",
+      "fileSuffix": "-blue",
+      "src": {
+        "x": 0,
+        "y": 0,
+        "w": 1735,
+        "h": 1067
+      },
+      "dst": {
+        "x": 53,
+        "y": 49,
+        "w": 966,
+        "h": 623
+      },
+      "centerData": true,
+      "fieldOverrides": {
+        "qr": {
+          "absolute": true,
+          "box": {
+            "x": 809,
+            "y": 441,
+            "w": 163,
+            "h": 163
+          }
+        }
+      }
+    },
+    {
+      "id": "cr450",
+      "label": "CR450版",
+      "file": "assets/CR450.png",
+      "fileSuffix": "-CR450",
+      "src": {
+        "x": 0,
+        "y": 0,
+        "w": 1735,
+        "h": 1067
+      },
+      "dst": {
+        "x": 53,
+        "y": 49,
+        "w": 966,
+        "h": 623
+      },
+      "centerData": true,
+      "fieldOverrides": {
+        "qr": {
+          "absolute": true,
+          "box": {
+            "x": 809,
+            "y": 441,
+            "w": 163,
+            "h": 163
+          }
+        }
+      }
+    }
+  ],
   "fields": [
     {
       "id": "serial",
