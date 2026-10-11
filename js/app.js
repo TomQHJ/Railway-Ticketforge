@@ -912,9 +912,30 @@
     }
   }
 
-  /* 兜底二：走浏览器自己的下载（手机端 / Firefox / Safari 都靠它）。
-     部署到 https 后 blob 下载是正常可用的；file:// 下 Chrome 会静默丢弃，
-     所以桌面上优先用上面的目录写入。 */
+  /* 兜底二：系统分享面板（手机端首选）。
+     小米 / 华为 / UC 这类浏览器的下载器取不到 blob: 链接，会直接报「已取消下载」，
+     但它们的 navigator.share 是好的 —— 走系统分享面板可以「保存到文件 / 相册」。 */
+  function shareFile(blob, filename, onDone) {
+    try {
+      if (!navigator.canShare || typeof File !== 'function') return false;
+      var type = blob.type || (filename.slice(-5) === '.json' ? 'application/json' : 'image/png');
+      var file = new File([blob], filename, { type: type });
+      if (!navigator.canShare({ files: [file] })) return false;
+      navigator.share({ files: [file], title: filename }).then(function () {
+        if (onDone) onDone('share');
+      }).catch(function (err) {
+        if (err && err.name === 'AbortError') { if (onDone) onDone('cancel'); return; }
+        if (onDone) onDone('fail');
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* 兜底三：浏览器自身的下载（<a download> + blob）。
+     在 https 下可用；file:// 下 Chrome 会静默丢弃，国产浏览器可能报「已取消下载」，
+     所以它只是最后一道，真正保底的是结果区那张可以直接长按保存的图片。 */
   function browserDownload(blob, filename, onDone) {
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -934,25 +955,39 @@
     showExportResult(blob, filename, kind);
 
     function viaFallback(reason) {
-      /* 目录写入不可用 / 失败 → 自动退回「另存为」→ 再退回浏览器下载 */
-      pickerSave(blob, filename, kind, function (how, name) {
+      /* 目录写入不可用 / 失败 → 自动降级：
+         「另存为」→「系统分享」→「浏览器下载」→ 结果区那张可长按保存的图片 */
+      var handled = pickerSave(blob, filename, kind, function (how, name) {
         if (how === 'cancel') { toast('已取消保存'); return; }
         if (how === 'picker') {
           toast('已保存：' + name);
-          if (lastExport) lastExport.saved = true;
+          if (lastExport) { lastExport.saved = true; lastExport.via = 'picker'; }
           refreshExportResult();
           return;
         }
-        browserDownload(blob, filename, function () {
-          toast('已调用浏览器下载：' + filename);
-          if (lastExport) { lastExport.saved = true; lastExport.via = 'download'; }
-          refreshExportResult();
-        });
-      }) || browserDownload(blob, filename, function () {
+        downloadOrShare();
+      });
+      if (!handled) downloadOrShare();
+
+      function downloadOrShare() {
+        if (shareFile(blob, filename, function (how) {
+          if (how === 'cancel') { toast('已取消分享'); return; }
+          if (how === 'share') {
+            toast('已打开系统分享，可另存到相册 / 文件');
+            if (lastExport) { lastExport.saved = true; lastExport.via = 'share'; }
+            refreshExportResult();
+            return;
+          }
+          browserDownload(blob, filename, function () { markDownload(reason); });
+        })) return;
+        browserDownload(blob, filename, function () { markDownload(reason); });
+      }
+
+      function markDownload(reason) {
         toast((reason ? reason + '，' : '') + '已调用浏览器下载：' + filename);
         if (lastExport) { lastExport.saved = true; lastExport.via = 'download'; }
         refreshExportResult();
-      });
+      }
     }
 
     ensureDir().then(function (dir) {
@@ -987,8 +1022,29 @@
     var line = document.createElement('div');
     var where = '';
     if (e.saved && e.via === 'dir') where = '<br>已直接写入「' + (dirHandle ? dirHandle.name : '') + '/' + SUBDIR + '」文件夹';
+    else if (e.saved && e.via === 'picker') where = '<br>已通过「另存为」保存';
+    else if (e.saved && e.via === 'share') where = '<br>已打开系统分享，可另存到相册 / 文件';
     else if (e.saved && e.via === 'download') where = '<br>已调用浏览器下载';
     line.innerHTML = '上次导出：<b>' + e.filename + '</b>（' + humanSize(e.blob.size) + '）' + where;
+    box.appendChild(line);
+
+    /* 保底通道：图片直接放在结果区，手机上长按即可保存到相册。
+       小米 / 华为 / UC 这类浏览器的下载器对 blob: 支持不好（会报「已取消下载」），
+       而长按保存图片在任何手机浏览器上都有效。 */
+    if (e.kind !== 'json') {
+      var thumb = document.createElement('img');
+      thumb.className = 'export-thumb';
+      thumb.src = e.url;
+      thumb.alt = e.filename;
+      box.appendChild(thumb);
+      var tip = document.createElement('div');
+      tip.className = 'hint export-tip';
+      tip.textContent = location.protocol === 'file:'
+        ? '本地文件方式打开时浏览器会拦截下载：请长按上面的图片保存到相册，或改用 http(s) 访问。'
+        : '手机上下载被拦截时，直接长按上面的图片即可保存到相册。';
+      box.appendChild(tip);
+    }
+
     var acts = document.createElement('div');
     acts.className = 'acts';
 
@@ -1021,7 +1077,6 @@
     });
     acts.appendChild(as);
 
-    box.appendChild(line);
     box.appendChild(acts);
   }
 

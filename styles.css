@@ -317,6 +317,20 @@ button.on { background: var(--brand-soft); border-color: #e9b6b2; color: #8d1b15
 .export-result .acts a:hover,
 .export-result .acts button:hover { background: #fff6f5; border-color: var(--brand); }
 
+/* 结果区里的票面缩略图：手机上长按即可保存（下载被拦截时的保底通道） */
+.export-thumb {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  margin: 8px 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  cursor: zoom-in;
+}
+
+.export-tip { margin-top: 2px; }
+
 .group-title {
   font-size: 12px;
   font-weight: 700;
