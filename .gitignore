@@ -1,0 +1,14 @@
+# WorkBuddy 会话工作目录（本地记忆，不随仓库发布）
+.workbuddy/
+
+# 临时 / 构建产物
+work/
+*.log
+*.tmp
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/

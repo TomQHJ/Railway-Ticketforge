@@ -1,0 +1,565 @@
+{
+  "version": 1,
+  "canvas": {
+    "width": 1062,
+    "height": 720
+  },
+  "paper": {
+    "x": 53,
+    "y": 49,
+    "w": 966,
+    "h": 623
+  },
+  "fonts": {
+    "cjk": "\"SimHei\",\"Heiti SC\",\"Microsoft YaHei\",\"PingFang SC\",\"Noto Sans SC\",\"Source Han Sans SC\",sans-serif",
+    "num": "\"Arial\",\"Helvetica Neue\",Helvetica,\"Liberation Sans\",sans-serif",
+    "pin": "\"Times New Roman\",Times,\"Liberation Serif\",Georgia,serif"
+  },
+  "ink": "#241c17",
+  "accent": "#c2382a",
+  "groups": [
+    {
+      "id": "ticket",
+      "title": "票面信息"
+    },
+    {
+      "id": "trip",
+      "title": "行程信息"
+    },
+    {
+      "id": "passenger",
+      "title": "乘客信息"
+    },
+    {
+      "id": "fixed",
+      "title": "固定文案"
+    },
+    {
+      "id": "deco",
+      "title": "装饰 / 二维码"
+    }
+  ],
+  "fields": [
+    {
+      "id": "serial",
+      "label": "票号",
+      "group": "ticket",
+      "box": {
+        "x": 87,
+        "y": 92,
+        "w": 339,
+        "h": 41
+      },
+      "align": "center",
+      "font": "num",
+      "size": 54.77,
+      "scaleX": 0.963,
+      "spacing": 0.164,
+      "color": "accent",
+      "weight": 700,
+      "editable": true,
+      "value": ""
+    },
+    {
+      "id": "gate",
+      "label": "检票口 / 候车",
+      "group": "ticket",
+      "box": {
+        "x": 801.5,
+        "y": 84,
+        "w": 169.5,
+        "h": 42
+      },
+      "align": "right",
+      "font": "cjk",
+      "size": 44.94,
+      "scaleX": 0.963,
+      "spacing": 0.163,
+      "weight": 700,
+      "editable": true,
+      "calibrate": false,
+      "fitMin": 190,
+      "required": false,
+      "widthFrom": {
+        "field": "serial",
+        "byPrefix": {
+          "": 0.5,
+          "检票:": 0.5,
+          "候车:": 1
+        }
+      },
+      "prefixSource": "gatePrefix",
+      "prefix": "",
+      "prefixOptions": [
+        {
+          "value": "",
+          "label": "无"
+        },
+        {
+          "value": "检票:",
+          "label": "检票"
+        },
+        {
+          "value": "候车:",
+          "label": "候车"
+        }
+      ],
+      "value": ""
+    },
+    {
+      "id": "fromStation",
+      "label": "出发站",
+      "group": "trip",
+      "box": {
+        "x": 64.5,
+        "y": 139,
+        "w": 340,
+        "h": 62
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 63.77,
+      "scaleX": 1.008,
+      "spacing": 1.176,
+      "weight": 700,
+      "editable": true,
+      "calibrate": false,
+      "fitSpacing": {
+        "width": 198.5,
+        "max": 1.176
+      },
+      "small": {
+        "chars": "站",
+        "ratio": 0.64,
+        "spacingBefore": 0.157
+      },
+      "value": ""
+    },
+    {
+      "id": "fromPinyin",
+      "label": "出发站拼音",
+      "group": "trip",
+      "box": {
+        "x": 117,
+        "y": 205,
+        "w": 233,
+        "h": 37
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 43,
+      "scaleX": 0.935,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "calibrate": false,
+      "value": ""
+    },
+    {
+      "id": "trainNo",
+      "label": "车次",
+      "group": "trip",
+      "box": {
+        "x": 443,
+        "y": 154,
+        "w": 168,
+        "h": 42
+      },
+      "align": "center",
+      "font": "num",
+      "size": 57.72,
+      "scaleX": 0.964,
+      "spacing": 0.05,
+      "weight": 700,
+      "editable": true,
+      "value": ""
+    },
+    {
+      "id": "toStation",
+      "label": "到达站",
+      "group": "trip",
+      "box": {
+        "x": 630,
+        "y": 139,
+        "w": 340,
+        "h": 62
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 63.77,
+      "scaleX": 1.008,
+      "spacing": 1.176,
+      "weight": 700,
+      "editable": true,
+      "calibrate": false,
+      "fitSpacing": {
+        "width": 198.5,
+        "max": 1.176
+      },
+      "small": {
+        "chars": "站",
+        "ratio": 0.64,
+        "spacingBefore": 0.157
+      },
+      "value": ""
+    },
+    {
+      "id": "toPinyin",
+      "label": "到达站拼音",
+      "group": "trip",
+      "box": {
+        "x": 669,
+        "y": 205,
+        "w": 233,
+        "h": 36
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 42.45,
+      "scaleX": 0.873,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "value": ""
+    },
+    {
+      "id": "date",
+      "label": "乘车日期",
+      "group": "trip",
+      "box": {
+        "x": 72,
+        "y": 252,
+        "w": 312,
+        "h": 40
+      },
+      "align": "center",
+      "font": "num",
+      "size": 50.23,
+      "scaleX": 0.967,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "small": {
+        "chars": "年月日",
+        "ratio": 0.7
+      },
+      "value": ""
+    },
+    {
+      "id": "time",
+      "label": "发车时间",
+      "group": "trip",
+      "box": {
+        "x": 407,
+        "y": 251,
+        "w": 141,
+        "h": 38
+      },
+      "align": "center",
+      "font": "num",
+      "size": 48.2,
+      "scaleX": 0.951,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "small": {
+        "chars": "开",
+        "ratio": 0.62
+      },
+      "value": ""
+    },
+    {
+      "id": "carSeat",
+      "label": "车厢席位",
+      "group": "trip",
+      "box": {
+        "x": 645,
+        "y": 253,
+        "w": 189,
+        "h": 36
+      },
+      "align": "center",
+      "font": "num",
+      "size": 45,
+      "scaleX": 1.014,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "small": {
+        "chars": "车号",
+        "ratio": 0.68
+      },
+      "value": ""
+    },
+    {
+      "id": "price",
+      "label": "票价",
+      "group": "ticket",
+      "box": {
+        "x": 82,
+        "y": 307,
+        "w": 152,
+        "h": 39
+      },
+      "align": "center",
+      "font": "num",
+      "size": 50.14,
+      "scaleX": 0.993,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "calibrate": false,
+      "prefix": "¥",
+      "suffix": "元",
+      "small": {
+        "chars": "元",
+        "ratio": 0.57
+      },
+      "value": ""
+    },
+    {
+      "id": "seatClass",
+      "label": "席别",
+      "group": "trip",
+      "box": {
+        "x": 759,
+        "y": 304,
+        "w": 113,
+        "h": 37
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 37.84,
+      "scaleX": 1.019,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "value": ""
+    },
+    {
+      "id": "usage",
+      "label": "使用说明（固定，不可编辑）",
+      "group": "fixed",
+      "box": {
+        "x": 75,
+        "y": 405,
+        "w": 239,
+        "h": 40
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 43.95,
+      "scaleX": 0.92,
+      "spacing": 0.02,
+      "weight": 400,
+      "stroke": 0.015,
+      "editable": false,
+      "value": "仅供收藏使用"
+    },
+    {
+      "id": "idNumber",
+      "label": "证件号码",
+      "group": "passenger",
+      "box": {
+        "x": 74,
+        "y": 457,
+        "w": 419,
+        "h": 42
+      },
+      "align": "left",
+      "font": "num",
+      "size": 56.8,
+      "scaleX": 0.793,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "value": ""
+    },
+    {
+      "id": "passenger",
+      "label": "乘客姓名",
+      "group": "passenger",
+      "box": {
+        "x": 512,
+        "y": 457,
+        "w": 131,
+        "h": 42
+      },
+      "align": "left",
+      "font": "cjk",
+      "size": 43.94,
+      "scaleX": 0.973,
+      "spacing": 0.05,
+      "weight": 700,
+      "editable": true,
+      "value": ""
+    },
+    {
+      "id": "note1",
+      "label": "报销凭证说明",
+      "group": "fixed",
+      "box": {
+        "x": 131,
+        "y": 519,
+        "w": 540,
+        "h": 35
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 36.79,
+      "scaleX": 0.942,
+      "spacing": 0,
+      "weight": 400,
+      "stroke": 0.015,
+      "editable": false,
+      "calibrate": false,
+      "control": "select",
+      "value": "欢度国庆 祝福祖国",
+      "options": [
+        "欢度国庆 祝福祖国",
+        "买票请到12306 发货请到95306"
+      ]
+    },
+    {
+      "id": "note2",
+      "label": "退票改签说明",
+      "group": "fixed",
+      "box": {
+        "x": 130.5,
+        "y": 563,
+        "w": 540,
+        "h": 35
+      },
+      "align": "center",
+      "font": "cjk",
+      "size": 37.84,
+      "scaleX": 0.913,
+      "spacing": 0,
+      "weight": 400,
+      "stroke": 0.015,
+      "editable": false,
+      "calibrate": false,
+      "value": "中国铁路祝您旅途愉快"
+    },
+    {
+      "id": "bottomCode",
+      "label": "底部条码号",
+      "group": "ticket",
+      "box": {
+        "x": 80,
+        "y": 619,
+        "w": 458,
+        "h": 37
+      },
+      "align": "left",
+      "font": "num",
+      "size": 50.78,
+      "scaleX": 0.7,
+      "spacing": 0,
+      "weight": 700,
+      "editable": true,
+      "calibrate": false,
+      "split": {
+        "parts": 2,
+        "sep": "   ",
+        "labels": [
+          "条码编码",
+          "尾号"
+        ]
+      },
+      "value": ""
+    },
+    {
+      "id": "seal",
+      "label": "时间下方圆章",
+      "group": "deco",
+      "type": "seal",
+      "box": {
+        "x": 419,
+        "y": 297,
+        "w": 48,
+        "h": 48
+      },
+      "ringWidth": 2.6,
+      "charRatio": 0.62,
+      "weight": 400,
+      "gap": 1.14,
+      "color": "ink",
+      "editable": false,
+      "control": "chips",
+      "multi": true,
+      "maxCount": 4,
+      "value": [],
+      "options": [
+        {
+          "value": "惠",
+          "label": "惠"
+        },
+        {
+          "value": "学",
+          "label": "学"
+        },
+        {
+          "value": "网",
+          "label": "网"
+        },
+        {
+          "value": "支",
+          "label": "支"
+        }
+      ]
+    },
+    {
+      "id": "dashedBox",
+      "label": "虚线框（装饰）",
+      "group": "deco",
+      "type": "dashed",
+      "box": {
+        "x": 118,
+        "y": 513,
+        "w": 586,
+        "h": 91
+      },
+      "lineWidth": 2,
+      "dash": [
+        7,
+        5
+      ],
+      "color": "ink",
+      "editable": false
+    },
+    {
+      "id": "trainRule",
+      "label": "车次下箭头（装饰）",
+      "group": "deco",
+      "type": "arrow",
+      "box": {
+        "x": 446,
+        "y": 205,
+        "w": 163,
+        "h": 14
+      },
+      "lineWidth": 2.6,
+      "headLength": 17,
+      "headHalf": 5.5,
+      "color": "ink",
+      "editable": false
+    },
+    {
+      "id": "qr",
+      "label": "二维码",
+      "group": "deco",
+      "type": "qr",
+      "box": {
+        "x": 754,
+        "y": 441,
+        "w": 218,
+        "h": 220
+      },
+      "qrPrefix": "https://rail.re/#",
+      "qrSource": "trainNo",
+      "qrEcc": "M",
+      "editable": false
+    }
+  ]
+}

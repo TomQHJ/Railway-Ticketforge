@@ -1,0 +1,693 @@
+/* =============================================================================
+ * 铁路电子客票 · 版式编辑器 样式
+ * ========================================================================== */
+:root {
+  --bg: #eef1f5;
+  --panel: #ffffff;
+  --line: #d9dee7;
+  --text: #1f2430;
+  --muted: #6b7488;
+  --brand: #b3251d;
+  --brand-soft: #fdeceb;
+  --shadow: 0 10px 30px rgba(23, 32, 51, .12);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font: 14px/1.6 "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---------------- 左侧：票面舞台 ---------------- */
+.workspace {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+
+.toolbar .title {
+  font-weight: 700;
+  margin-right: 8px;
+  letter-spacing: .5px;
+}
+
+.toolbar .spacer { flex: 1 1 auto; }
+
+button, .filebtn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: .15s;
+}
+
+button:hover, .filebtn:hover { border-color: #b9c1d0; background: #f7f9fc; }
+button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+button.primary:hover { background: #99201a; }
+button.on { background: var(--brand-soft); border-color: #e9b6b2; color: #8d1b15; }
+.filebtn { display: inline-block; }
+.filebtn input { display: none; }
+
+.stage-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  /* 左侧给底图切换按钮留出空间，票面居中时不会被压住 */
+  padding: 24px 24px 24px 116px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 票面滚动容器（切换按钮不跟着滚，避免窄窗口下被推出视野）。
+   里面的票面永远按容器尺寸等比缩放，所以这里直接 hidden：
+   不允许出现滚动条——窗口再小也是「缩小显示」，而不是「滚动查看」。 */
+.stage-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ---------------- 左侧底图切换（液态玻璃 / Liquid Glass） ---------------- */
+.bg-switch {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, .28));
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, .65);
+  box-shadow:
+    0 10px 30px rgba(16, 22, 35, .16),
+    0 1px 0 rgba(255, 255, 255, .9) inset,
+    0 -1px 0 rgba(255, 255, 255, .35) inset;
+}
+
+.bg-switch button {
+  position: relative;
+  min-width: 76px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .38);
+  color: #3a4152;
+  font-size: 13px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: transform .16s, background .16s, box-shadow .16s, color .16s;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset;
+}
+
+.bg-switch button:hover {
+  background: rgba(255, 255, 255, .68);
+  transform: translateY(-1px);
+}
+
+.bg-switch button.on {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .72));
+  color: #8d1b15;
+  font-weight: 700;
+  border-color: rgba(255, 255, 255, .9);
+  box-shadow:
+    0 4px 14px rgba(16, 22, 35, .14),
+    0 1px 0 rgba(255, 255, 255, 1) inset;
+}
+
+.bg-switch button:active { transform: scale(.97); }
+
+@media (max-width: 1080px) {
+  .bg-switch { left: 8px; padding: 5px; }
+  .bg-switch button { min-width: 62px; padding: 7px 10px; font-size: 12px; }
+  .stage-area { padding-left: 88px; }
+}
+
+.stage-wrap { position: relative; }
+
+.stage {
+  position: relative;
+  transform-origin: 0 0;
+  /* 不加白底与阴影：底图自带边框，加白板会在蓝票 / CR450 上露出白色背板 */
+  background: none;
+  box-shadow: none;
+}
+
+.stage canvas { display: block; }
+
+/* 可点击的字段热区 */
+.hits { position: absolute; inset: 0; }
+
+.hit {
+  position: absolute;
+  border-radius: 3px;
+  cursor: text;
+  transition: .12s;
+}
+
+.stage.guides .hit {
+  border: 1px dashed rgba(179, 37, 29, .45);
+  background: rgba(179, 37, 29, .05);
+}
+
+.stage.guides .hit.editable:hover,
+.hit.editable:hover {
+  border-color: var(--brand);
+  background: rgba(179, 37, 29, .14);
+}
+
+.hit.locked { cursor: not-allowed; }
+.stage.guides .hit.locked { border-style: dotted; border-color: rgba(90, 100, 120, .45); background: rgba(90, 100, 120, .06); }
+
+/* 就地编辑输入框 */
+.inline-edit {
+  position: absolute;
+  z-index: 20;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--brand);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .18);
+  outline: none;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+  font-weight: 700;
+  color: var(--text);
+  transform-origin: center center;
+}
+
+/* ---------------- 右侧：字段面板 ---------------- */
+.panel {
+  flex: 0 0 330px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel-head {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-head-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* 抽屉模式下的「展开 / 收起」按钮（宽屏时隐藏） */
+.panel-toggle {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f6f8fb;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.panel-toggle:hover { background: #eef2f8; color: var(--text); }
+
+.panel-toggle::after {
+  content: '';
+  width: 6px; height: 6px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg) translate(-1px, -1px);
+  transition: transform .22s;
+}
+
+.panel.collapsed .panel-toggle::after { transform: rotate(-135deg) translate(-2px, -2px); }
+
+.panel-head h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+
+.panel-head p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.panel-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 8px 16px 28px;
+}
+
+/* 导出结果（可手动保存的兜底入口） */
+.export-result {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid #e3c9c7;
+  background: var(--brand-soft);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #6d2b26;
+  word-break: break-all;
+}
+
+.export-result .acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.export-result .acts a,
+.export-result .acts button {
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid #d9a9a5;
+  background: #fff;
+  color: #8d1b15;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.export-result .acts a:hover,
+.export-result .acts button:hover { background: #fff6f5; border-color: var(--brand); }
+
+.group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin: 16px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.field {
+  margin-bottom: 10px;
+}
+
+.field label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.field label .tag {
+  font-size: 11px;
+  color: #99a1b3;
+}
+
+.field input[type=text],
+.field select.sel {
+  width: 100%;
+  font: inherit;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: none;
+  background: #fbfcfe;
+}
+
+/* 带固定前缀的输入（如「检票:」+ 可编辑内容） */
+.input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfcfe;
+  overflow: hidden;
+}
+
+.input-group .pfx {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px 6px 9px;
+  background: #eef1f6;
+  color: #6b7488;
+  border-right: 1px solid var(--line);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.input-group .sfx {
+  display: flex;
+  align-items: center;
+  padding: 6px 9px 6px 8px;
+  background: #eef1f6;
+  color: #6b7488;
+  border-left: 1px solid var(--line);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* 多选圆章：一组可点亮的按钮 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  min-width: 44px;
+  padding: 6px 0;
+  font-size: 15px;
+  border: 1px solid var(--line);
+  background: #fbfcfe;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  transition: .15s;
+}
+
+.chip:hover { border-color: #b9c1d0; background: #f2f5fa; }
+
+.chip.on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+/* 多段独立编辑（如底部条码号：编码 + 尾号） */
+.split-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.split-row input[type=text] {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.split-row input[type=text]:last-child {
+  flex: 0 0 64px;
+  text-align: center;
+}
+
+.split-row .sep {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #9aa2b4;
+  white-space: nowrap;
+}
+
+.input-group input[type=text] {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.input-group:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(179, 37, 29, .1);
+  background: #fff;
+}
+
+.field select.sel {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #8b93a5 50%), linear-gradient(135deg, #8b93a5 50%, transparent 50%);
+  background-position: calc(100% - 16px) 52%, calc(100% - 11px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.field input[type=text]:focus,
+.field select.sel:focus {
+  border-color: var(--brand);
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(179, 37, 29, .1);
+}
+
+/* 输入框留空即为空，不用灰色占位文字（示例值只在「填充示例」时写入） */
+
+
+.field.locked input[type=text] {
+  background: #f1f3f7;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.field .hint {
+  font-size: 11px;
+  color: #9aa2b4;
+  margin-top: 3px;
+}
+
+.qr-text {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  padding: 6px 9px;
+  border: 1px dashed var(--line);
+  border-radius: 7px;
+  background: #fbfcfe;
+  color: #3a4152;
+  word-break: break-all;
+}
+
+.field.flash input[type=text],
+.field.flash select.sel {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(179, 37, 29, .16);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(31, 36, 48, .92);
+  color: #fff;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .25s;
+  z-index: 99;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------------- 必填校验弹窗 ---------------- */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 26, 38, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+.modal-mask[hidden] { display: none; }
+
+.modal {
+  width: min(420px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 22px 18px;
+  box-shadow: 0 24px 60px rgba(16, 22, 35, .3);
+}
+
+.modal h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--brand);
+}
+
+.modal p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.modal ul {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.modal li {
+  font-size: 13px;
+  padding: 4px 10px;
+  border: 1px solid #e9b6b2;
+  background: var(--brand-soft);
+  color: #8d1b15;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.modal li:hover { background: #fbdcd9; }
+
+.modal-tip {
+  font-size: 12px;
+  color: #9aa2b4;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ---------------- 切换底图的加载动画 ---------------- */
+.loading-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(238, 241, 245, .28);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.loading-mask[hidden] { display: none; }
+.loading-mask.show { opacity: 1; }
+
+.loading-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 22px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .5));
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, .8);
+  box-shadow:
+    0 14px 40px rgba(16, 22, 35, .18),
+    0 1px 0 rgba(255, 255, 255, .95) inset;
+  font-size: 13px;
+  color: #3a4152;
+  letter-spacing: .5px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(179, 37, 29, 0), #b3251d);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------- 自适应：票面永远完整显示，不靠滚动条 ----------------
+   宽屏：左右两栏，面板常驻。
+   中等：面板收窄，票面继续自动缩放。
+   窄屏 / 移动：面板变成底部抽屉，只留一条标题栏，点「展开」拉起来。 */
+@media (max-width: 1180px) {
+  .panel { flex: 0 0 288px; }
+  .stage-area { padding-left: 96px; padding-right: 16px; }
+}
+
+@media (max-width: 940px) {
+  .app { flex-direction: column; }
+  .workspace { flex: 1 1 auto; min-height: 0; }
+  .stage-area { padding: 12px 12px 74px 92px; }
+
+  .panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    flex: 0 0 auto;
+    height: 52vh;
+    max-height: 52vh;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -14px 40px rgba(16, 22, 35, .2);
+    transition: transform .26s cubic-bezier(.4, 0, .2, 1);
+  }
+
+  /* 收起状态：只留标题栏，随时可再拉起来 */
+  .panel.collapsed { transform: translateY(calc(100% - 54px)); }
+  .panel-head { padding: 10px 14px; cursor: pointer; }
+  .panel.collapsed .panel-head p { display: none; }
+  .panel.collapsed #exportResult { display: none; }
+  .panel-toggle { display: inline-flex; }
+
+  .bg-switch { left: 8px; padding: 5px; }
+  .bg-switch button { min-width: 60px; padding: 7px 9px; font-size: 12px; }
+}
+
+@media (max-width: 620px) {
+  .toolbar { padding: 8px 10px; gap: 6px; }
+  .toolbar .title { display: none; }
+  .stage-area { padding: 8px 8px 74px 78px; }
+  .bg-switch { left: 4px; padding: 4px; border-radius: 14px; }
+  .bg-switch button { min-width: 52px; padding: 6px 7px; font-size: 11px; }
+}
+
+@media print {
+  .toolbar, .panel, .toast { display: none !important; }
+  .app, .workspace, .stage-area { display: block; height: auto; padding: 0; overflow: visible; }
+  .stage { box-shadow: none; }
+}

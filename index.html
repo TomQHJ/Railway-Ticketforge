@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>车票模拟 · 仅供收藏</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <!-- 左：票面 -->
+  <div class="workspace">
+    <div class="toolbar">
+      <span class="title">车票模拟 · 仅供收藏</span>
+      <button id="btnGuides" class="on" title="显示/隐藏可编辑区域框">显示编辑区</button>
+      <button id="btnClear" title="清空所有可编辑字段">清空</button>
+      <button id="btnPng" class="primary" title="导出 PNG 图片">导出 PNG</button>
+      <select id="pngScale" title="导出倍率">
+        <option value="1">1x (1062×720)</option>
+        <option value="2" selected>2x (2124×1440)</option>
+        <option value="3">3x (3186×2160)</option>
+      </select>
+      <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px">
+        <input type="checkbox" id="pngWhite" checked> 白底
+      </label>
+      <button id="btnJsonOut" title="导出当前版式与数据为 JSON">导出 JSON</button>
+      <label class="filebtn" title="导入之前导出的 JSON">
+        导入 JSON<input type="file" id="fileJson" accept=".json,application/json">
+      </label>
+      <span class="spacer"></span>
+      <!-- <button id="btnPanel" class="ghost" title="展开 / 收起编辑面板" aria-expanded="true">编辑面板</button> -->
+      <span id="sizeInfo" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+    <div class="stage-area" id="stageArea">
+      <!-- 左侧居中的底图切换（液态玻璃） -->
+      <div class="bg-switch" id="bgSwitch" role="group" aria-label="票面底图切换"></div>
+      <div class="stage-scroll" id="stageScroll">
+        <div class="stage-wrap" id="stageWrap">
+          <div class="stage guides" id="stage">
+            <canvas id="ticket"></canvas>
+            <div class="hits" id="hits"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右：字段面板（窄屏时变成可收起的底部抽屉） -->
+  <aside class="panel" id="panel">
+    <div class="panel-head" id="panelHead">
+      <div class="panel-head-top">
+        <h1>票面编辑</h1>
+        <button type="button" class="panel-toggle" id="panelToggle" aria-expanded="true">收起</button>
+      </div>
+
+      <div class="export-result" id="exportResult" hidden></div>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 必填校验弹窗 -->
+<div class="modal-mask" id="modalMask" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">还有 <span id="modalCount">0</span> 项没填</h3>
+    <p>票面信息均为必填项，填完才能导出。点击下面任意一项可跳到对应输入框：</p>
+    <ul id="modalList"></ul>
+    <div class="modal-actions">
+      <button id="modalClose" class="primary">知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 切换底图时的加载动画 -->
+<div class="loading-mask" id="loadingMask" hidden>
+  <div class="loading-card">
+    <span class="spinner"></span>
+    <span>正在切换底图…</span>
+  </div>
+</div>
+
+<script src="assets/bg-data.js"></script>
+<script src="js/qrcode.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
